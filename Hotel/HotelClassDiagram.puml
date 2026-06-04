@@ -1,0 +1,179 @@
+@startuml HotelManagementSystem
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor WhiteSmoke
+    BorderColor DarkSlateGray
+    ArrowColor DarkSlateGray
+    HeaderBackgroundColor SteelBlue
+    HeaderFontColor White
+}
+skinparam interfaceBackgroundColor LightYellow
+skinparam abstractClassBackgroundColor LightCyan
+
+title Hotel Management System — Class Diagram
+
+' ─────────────────────────────────────────
+' INTERFACE
+' ─────────────────────────────────────────
+interface Bookable {
+    + getPricePerNight() : double
+    + calculateCost(checkIn: LocalDate, checkOut: LocalDate) : double
+}
+
+' ─────────────────────────────────────────
+' ABSTRACT CLASS — Room hierarchy
+' ─────────────────────────────────────────
+abstract class Room {
+    - roomNumber : int
+    - pricePerNight : double
+    - available : boolean
+    --
+    + getRoomNumber() : int
+    + getPricePerNight() : double
+    + isAvailable() : boolean
+    + setAvailable(available: boolean) : void
+    + calculateCost(checkIn: LocalDate, checkOut: LocalDate) : double
+    + {abstract} getDescription() : String
+    + toString() : String
+}
+
+class SingleRoom {
+    + SingleRoom(roomNumber: int, pricePerNight: double)
+    + getDescription() : String
+}
+
+class DoubleRoom {
+    + DoubleRoom(roomNumber: int, pricePerNight: double)
+    + getDescription() : String
+}
+
+class Suite {
+    + Suite(roomNumber: int, pricePerNight: double)
+    + getDescription() : String
+}
+
+class Penthouse {
+    + Penthouse(roomNumber: int, pricePerNight: double)
+    + getDescription() : String
+}
+
+' ─────────────────────────────────────────
+' ABSTRACT CLASS — Person hierarchy
+' ─────────────────────────────────────────
+abstract class Person {
+    - firstName : String
+    - lastName : String
+    --
+    + getFirstName() : String
+    + getLastName() : String
+    + getFullName() : String
+    + setFirstName(firstName: String) : void
+    + setLastName(lastName: String) : void
+}
+
+class Customer {
+    - {static} idCounter : int
+    - customerId : int
+    - email : String
+    - phone : String
+    --
+    + getCustomerId() : int
+    + getEmail() : String
+    + getPhone() : String
+    + setEmail(email: String) : void
+    + setPhone(phone: String) : void
+    + getDescription() : String
+    + toString() : String
+}
+
+' ─────────────────────────────────────────
+' RESERVATION
+' ─────────────────────────────────────────
+class Reservation {
+    - {static} idCounter : int
+    - reservationId : int
+    - checkIn : LocalDate
+    - checkOut : LocalDate
+    - active : boolean
+    --
+    + getReservationId() : int
+    + getCustomer() : Customer
+    + getRoom() : Room
+    + getCheckIn() : LocalDate
+    + getCheckOut() : LocalDate
+    + isActive() : boolean
+    + cancel() : void
+    + getNights() : long
+    + getTotalCost() : double
+    + overlaps(start: LocalDate, end: LocalDate) : boolean
+    + toString() : String
+}
+
+' ─────────────────────────────────────────
+' HOTEL MANAGER
+' ─────────────────────────────────────────
+class HotelManager {
+    - hotelName : String
+    - rooms : List<Room>
+    - customers : List<Customer>
+    - reservations : List<Reservation>
+    --
+    + addRoom(room: Room) : void
+    + getAvailableRooms() : List<Room>
+    + getAvailableRooms(checkIn: LocalDate, checkOut: LocalDate) : List<Room>
+    + isRoomAvailable(room: Room) : boolean
+    + isRoomAvailable(room: Room, checkIn: LocalDate, checkOut: LocalDate) : boolean
+    + registerCustomer(firstName, lastName, email, phone) : Customer
+    + createReservation(customer, room, checkIn, checkOut) : Reservation
+    + cancelReservation(reservationId: int) : void
+    + searchByCustomerName(name: String) : List<Reservation>
+    + searchByCustomerId(customerId: int) : List<Reservation>
+    + searchByDateRange(from: LocalDate, to: LocalDate) : List<Reservation>
+    + findReservationById(id: int) : Reservation
+    + findRoomByNumber(roomNumber: int) : Room
+    + getAllRooms() : List<Room>
+    + getAllCustomers() : List<Customer>
+    + getAllReservations() : List<Reservation>
+}
+
+' ─────────────────────────────────────────
+' CONSOLE MENU
+' ─────────────────────────────────────────
+class ConsoleMenu {
+    - scanner : Scanner
+    --
+    + start() : void
+    - createRoom() : void
+    - viewAvailableRooms() : void
+    - createReservation() : void
+    - viewRoomsForDateRange() : void
+    - cancelReservation() : void
+    - searchReservation() : void
+}
+
+' ─────────────────────────────────────────
+' RELATIONSHIPS
+' ─────────────────────────────────────────
+
+' Interface implementation
+Room        ..|>  Bookable
+
+' Inheritance
+SingleRoom  --|>  Room
+DoubleRoom  --|>  Room
+Suite       --|>  Room
+Penthouse   --|>  Room
+Customer    --|>  Person
+
+' Associations
+Reservation  "1" --> "1"  Customer  : for
+Reservation  "1" --> "1"  Room      : books
+
+HotelManager "1" o--> "*"  Room        : manages
+HotelManager "1" o--> "*"  Customer    : manages
+HotelManager "1" o--> "*"  Reservation : manages
+
+ConsoleMenu  "1" --> "1"  HotelManager : uses
+
+@enduml
